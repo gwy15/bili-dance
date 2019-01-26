@@ -1,0 +1,7 @@
+download
+.vscode
+__pycache__
+venv
+*.db
+*.zip
+*.json
