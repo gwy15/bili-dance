@@ -5,3 +5,5 @@ venv
 *.db
 *.zip
 *.json
+
+API_KEY

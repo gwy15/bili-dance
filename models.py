@@ -2,16 +2,9 @@ import sqlalchemy
 from sqlalchemy import Column, Integer, Text, VARCHAR
 from sqlalchemy.ext.declarative import declarative_base
 import datetime
+import enum
 
 Base = declarative_base()
-
-
-class VDownload(Base):
-    __tablename__ = 'download'
-
-    aid = Column(Integer, primary_key=True, unique=True, index=True)
-    picurl = Column(Text)
-    status = Column(sqlalchemy.Boolean)
 
 
 class Video(Base):
@@ -57,7 +50,64 @@ class Video(Base):
         )
 
 
-def getSession(dbpath):
+class Likelihood(enum.IntEnum):
+    'https://cloud.google.com/vision/docs/reference/rest/v1/images/annotate#Likelihood'
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+    @staticmethod
+    def fromName(name):
+        return getattr(Likelihood, name)
+
+
+class SafeAnnotation(Base):
+    'https://cloud.google.com/vision/docs/reference/rest/v1/images/annotate#SafeSearchAnnotation'
+
+    __tablename__ = 'safe_anno'
+
+    aid = Column(Integer, sqlalchemy.ForeignKey('videos.aid'),
+                 primary_key=True, unique=True, index=True)
+    adult = Column(Integer)
+    spoof = Column(Integer)
+    medical = Column(Integer)
+    violence = Column(Integer)
+    racy = Column(Integer)
+
+    @staticmethod
+    def fromVO(vo):
+        return SafeAnnotation(**{
+            name: Likelihood.fromName(vo[name])
+            for name in ('adult', 'medical', 'racy', 'spoof', 'violence')
+        })
+
+
+class Label(Base):
+    'https://cloud.google.com/vision/docs/reference/rest/v1/images/annotate#EntityAnnotation'
+
+    __tablename__ = 'labels'
+
+    id = Column(Integer, primary_key=True)
+    aid = Column(Integer, sqlalchemy.ForeignKey('videos.aid'), index=True)
+
+    description = Column(VARCHAR(128))
+    mid = Column(VARCHAR(128))
+    score = Column(sqlalchemy.Float)
+    topicality = Column(sqlalchemy.Float)
+
+    @staticmethod
+    def fromVO(vo):
+        return Label(**{
+            key: vo[key]
+            for key in ('description', 'mid', 'score', 'topicality')
+        })
+        # return Label(**vo)
+
+
+def getSession(dbpath) -> sqlalchemy.orm.Session:
     engine = sqlalchemy.create_engine(dbpath)
     Base.metadata.create_all(engine)
     sessionMaker = sqlalchemy.orm.sessionmaker(bind=engine)
