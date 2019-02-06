@@ -8,3 +8,4 @@ venv
 *.json
 
 API_KEY
+browse_app/config.py

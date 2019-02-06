@@ -1,0 +1,5 @@
+sqlalchemy
+pymysql
+
+flask
+bootstrap-flask
