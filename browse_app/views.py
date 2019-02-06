@@ -60,6 +60,11 @@ def getTags(session):
     return [item[0] for item in tags]
 
 
+def getPageOptions(page):
+    _startIndex = max(1, page-3)
+    return list(range(_startIndex, _startIndex+6))
+
+
 @app.route('/')
 def index():
     return flask.redirect(flask.url_for('safe', key='adult'))
@@ -68,8 +73,7 @@ def index():
 @app.route('/safe/<string:key>')
 def safe(key):
     page = max(1, flask.request.args.get('page', 1, type=int))
-    _startIndex = max(1, page-5)
-    pageoptions = list(range(_startIndex, _startIndex+10))
+
     keys = ('adult', 'racy', 'spoof', 'medical', 'violence')
 
     sess = models.getSession(app.config['DB_PATH'])
@@ -80,14 +84,12 @@ def safe(key):
                                  prefix='safe',
                                  key=key, keys=keys,
                                  videos=videos,
-                                 page=page, pageoptions=pageoptions)
+                                 page=page, pageoptions=getPageOptions(page))
 
 
 @app.route('/tag/<string:tagname>')
 def tag(tagname):
     page = max(1, flask.request.args.get('page', 1, type=int))
-    _startIndex = max(1, page-5)
-    pageoptions = list(range(_startIndex, _startIndex+10))
 
     sess = models.getSession(app.config['DB_PATH'])
     keys = getTags(sess)
@@ -98,7 +100,7 @@ def tag(tagname):
                                  prefix='tag',
                                  key=tagname, keys=keys,
                                  videos=videos,
-                                 page=page, pageoptions=pageoptions)
+                                 page=page, pageoptions=getPageOptions(page))
 
 
 @app.route('/pic/<string:picurl>')

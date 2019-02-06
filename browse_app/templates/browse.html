@@ -63,7 +63,7 @@
 
     <div class="row mt-3">
         {% for video in videos %}
-        <div class="img-outer-container col-sm-4 col-lg-3 float-left p-1">
+        <div class="img-outer-container col-6 col-sm-4 col-md-3 col-lg-3 float-left p-1">
             <div class="img-inner-container rounded p-1 m-1">
                 <a href=//www.bilibili.com/video/av{{video.aid}} target="_blank">
                     <img src="/pic/{{video.url}}" alt="{{video.title}}" class="rounded">
@@ -80,11 +80,11 @@
         <ul class="pagination justify-content-center">
             {% if page == 1 %}
             <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1">Previous</a>
+                <a class="page-link" href="#" tabindex="-1">←</a>
             </li>
             {% else %}
             <li class="page-item">
-                <a class="page-link" href="{{key}}?page={{page-1}}" tabindex="-1">Previous</a>
+                <a class="page-link" href="{{key}}?page={{page-1}}" tabindex="-1">←</a>
             </li>
             {% endif %}
 
@@ -97,7 +97,7 @@
             {% endfor %}
 
             <li class="page-item">
-                <a class="page-link" href="{{key}}?page={{page+1}}">Next</a>
+                <a class="page-link" href="{{key}}?page={{page+1}}">→</a>
             </li>
         </ul>
     </nav>
