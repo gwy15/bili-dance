@@ -34,7 +34,6 @@ def getVideosByAnnotation(keyname, page, session):
         .order_by(order_key.desc(), models.Video.ctime.desc())\
         .offset((page-1)*NUM_PER_PAGE)\
         .limit(NUM_PER_PAGE).all()
-    print(videos)
     return videos
 
 
