@@ -104,7 +104,7 @@ def tag(tagname):
 
 @app.route('/pic/<string:picurl>')
 def getPic(picurl):
-    if not picurl.split('|')[1].endswith('hdslb.com'):
+    if not picurl.split('|')[1].endswith('.hdslb.com'):
         return flask.Response(status=403)
     picurl = 'https:/' + picurl.replace('|', '/')
     img = requests.get(picurl).content
