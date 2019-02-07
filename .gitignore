@@ -1,12 +1,9 @@
-download
-danmaku
-
 .vscode
 __pycache__
 venv
-*.db
-*.zip
-*.json
 
 instance
 browse_app/config.py
+
+backup.sh
+
