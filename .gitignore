@@ -1,5 +1,6 @@
 download
 danmaku
+
 .vscode
 __pycache__
 venv
@@ -7,5 +8,5 @@ venv
 *.zip
 *.json
 
-API_KEY
+instance
 browse_app/config.py

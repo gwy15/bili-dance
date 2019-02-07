@@ -11,9 +11,7 @@ from progressbar import progressbar
 import models
 import config
 
-with open('API_KEY', 'r') as f:
-    API_KEY = f.read()
-URL = 'https://vision.googleapis.com/v1/images:annotate?key={}'.format(API_KEY)
+URL = 'https://vision.googleapis.com/v1/images:annotate?key={}'.format(config.API_KEY)
 
 
 class CloudVisionManager:
