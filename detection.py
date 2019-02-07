@@ -74,7 +74,7 @@ class CloudVisionManager:
             if anno.get('error', None):
                 if anno['error']['code'] != 4:
                     print(f'\naid: {record.aid}, url: {record.picurl}')
-                    print('\n' + anno['error']['message'] + '\n\n')
+                    print('\ncode: ' + anno['error']['code'] + ', ' + anno['error']['message'] + '\n\n')
                     raise RuntimeError(anno['error']['message'])
                 else:  # download
                     # print('using download method.')
