@@ -80,7 +80,7 @@ class SafeAnnotation(Base):
     @staticmethod
     def fromVO(vo):
         return SafeAnnotation(**{
-            name: Likelihood.fromName(vo[name])
+            name: int(Likelihood.fromName(vo[name]))
             for name in ('adult', 'medical', 'racy', 'spoof', 'violence')
         })
 
