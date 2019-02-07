@@ -6,6 +6,7 @@ import threading
 import queue
 import pickle
 import json
+import functools
 
 import requests
 import progressbar
@@ -53,9 +54,9 @@ class WriterThread(threading.Thread):
 
 class Spider:
     @staticmethod
-    def getPage(page, ps=20):
+    def getPage(page, ps=20, rid=20):
         url = 'https://api.bilibili.com/x/web-interface/newlist?'
-        url += f'callback=&rid=20&type=0&pn={page}&ps={ps}&jsonp=jsonp&_={int(time.time() * 1000)}'
+        url += f'callback=&rid={rid}&type=0&pn={page}&ps={ps}&jsonp=jsonp&_={int(time.time() * 1000)}'
         headers = {
             'Host': 'api.bilibili.com',
             'Referer': 'https://www.bilibili.com/v/dance/otaku/',
@@ -76,7 +77,7 @@ class Spider:
             raise BiliError(res['message'])
         return res['data']
 
-    def run(self):
+    def run(self, rid=20):
         if not os.path.exists('task.json'):
             total = self.getPage(1)['page']['count']
             pages = list(range(total // 50 + 2))
@@ -91,17 +92,20 @@ class Spider:
 
         WriterThread(self.queue, pbar).start()
 
+        func = functools.partial(self.runPage, rid=rid)
+
         with Pool(8) as pool:
-            pool.map(self.runPage, pages)
+            pool.map(func, pages)
         self.queue.put((None, None))
 
-    def runPage(self, page):
-        data = self.getPage(page, 50)['archives']
+    def runPage(self, page, rid=20):
+        data = self.getPage(page, ps=50, rid=rid)['archives']
         self.queue.put((page, data))
 
 
 def main():
-    Spider().run()
+    Spider().run(rid=154) # 三次元
+    # Spider().run(rid=20) # 宅舞
 
 
 if __name__ == "__main__":
