@@ -11,7 +11,7 @@ import functools
 import requests
 import progressbar
 
-
+import config
 from models import getSession, Video
 
 
@@ -24,7 +24,7 @@ class WriterThread(threading.Thread):
         super().__init__()
         self.q = queue
         self.pbar = progressbar.ProgressBar(max_value=num)
-        self.session = getSession('sqlite:///data.db')
+        self.session = getSession(config.DB_PATH)
         self.count = 0
 
     def run(self):

@@ -7,6 +7,7 @@ from sqlalchemy.sql.expression import func
 import progressbar
 
 from models import getSession, Video, VDownload
+import config
 
 REGEXP = re.compile('\w+\.\w+$')
 
@@ -21,7 +22,7 @@ class Producer(threading.Thread):
         self.pbar = None
 
     def run(self):
-        self.session = getSession('sqlite:///data.db')
+        self.session = getSession(config.DB_PATH)
         q = self.session.query(VDownload).filter(VDownload.status == False)
         self.total = q.count()
         if self.total == 0:

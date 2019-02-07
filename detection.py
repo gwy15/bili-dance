@@ -9,6 +9,7 @@ from sqlalchemy.sql.expression import func
 from progressbar import progressbar
 
 import models
+import config
 
 with open('API_KEY', 'r') as f:
     API_KEY = f.read()
@@ -20,7 +21,7 @@ class CloudVisionManager:
 
     def __init__(self):
         self.session = requests.session()
-        self.s = models.getSession('sqlite:///data.db')
+        self.s = models.getSession(config.DB_PATH)
 
     def getResults(self, records: typing.List[models.Video]):
         params = {
@@ -93,14 +94,15 @@ class CloudVisionManager:
         self.s.commit()
 
     def run(self, batch_size=16, batch_num=20):
-        print('已完成:', self.s.query(models.SafeAnnotation).count(), end='')
+        print('已完成:', self.s.query(models.SafeAnnotation).count(), end=', ')
+        print('总数量:', self.s.query(models.Video).count())
         query: sqlalchemy.orm.Query
         query = self.s.query(models.Video)\
             .filter(~ sqlalchemy.exists().where(models.Video.aid == models.SafeAnnotation.aid))\
             .filter(models.Video.picurl.notlike(r'%gif'))\
-            .order_by(func.random())
-            # .order_by(models.Video.views.desc())
-        print(', 剩余任务:', query.count())
+            .order_by(models.Video.views.desc())
+            # .order_by(func.random())
+        # print(', 剩余任务:', query.count())
 
         records = query.limit(batch_size * batch_num).all()
         # print('最低播放:', records[-1].views)

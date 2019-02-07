@@ -7,7 +7,7 @@ from progressbar import progressbar
 from sqlalchemy.sql.expression import func
 
 import models
-
+import config
 
 class DanmakuDownloader:
     def __init__(self):
@@ -38,7 +38,7 @@ class DanmakuDownloader:
 
 def main():
     downloader = DanmakuDownloader()
-    s = models.getSession('sqlite:///data.db')
+    s = models.getSession(config.DB_PATH)
     videos = s.query(models.Video).order_by(func.random()).all()
     for video in progressbar(videos):
         if os.path.exists(f'danmaku/{video.aid}.txt'):
