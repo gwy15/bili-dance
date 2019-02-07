@@ -61,7 +61,7 @@ def getTags(session):
 
 def getPageOptions(page):
     _startIndex = max(1, page-3)
-    return list(range(_startIndex, _startIndex+6))
+    return list(range(_startIndex, _startIndex+7))
 
 
 @app.route('/')
