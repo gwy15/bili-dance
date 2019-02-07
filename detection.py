@@ -11,7 +11,8 @@ from progressbar import progressbar
 import models
 import config
 
-URL = 'https://vision.googleapis.com/v1/images:annotate?key={}'.format(config.API_KEY)
+URL = 'https://vision.googleapis.com/v1/images:annotate?key={}'.format(
+    config.API_KEY)
 
 
 class CloudVisionManager:
@@ -71,13 +72,15 @@ class CloudVisionManager:
         annos = self.getResults(records)
         for record, anno in zip(records, annos):
             if anno.get('error', None):
-                if anno['error']['code'] not in (4, 14):
-                    print(f'\naid: {record.aid}, url: {record.picurl}')
-                    print('\ncode: ' + str(anno['error']['code']) + ', ' + anno['error']['message'] + '\n\n')
-                    raise RuntimeError(anno['error']['message'])
-                else:  # download
+                #                     bad data, can't download
+                if anno['error']['code'] in (3, 4, 14):
                     # print('using download method.')
                     anno = self.getResultByDownloading(record)
+                else:
+                    print(f'\naid: {record.aid}, url: {record.picurl}')
+                    print('\ncode: ' + str(anno['error']['code']) +
+                          ', ' + anno['error']['message'] + '\n\n')
+                    raise RuntimeError(anno['error']['message'])
 
             safeAnno = models.SafeAnnotation.fromVO(
                 anno['safeSearchAnnotation'])
@@ -99,7 +102,7 @@ class CloudVisionManager:
             .filter(~ sqlalchemy.exists().where(models.Video.aid == models.SafeAnnotation.aid))\
             .filter(models.Video.picurl.notlike(r'%gif'))\
             .order_by(models.Video.views.desc())
-            # .order_by(func.random())
+        # .order_by(func.random())
         # print(', 剩余任务:', query.count())
 
         records = query.limit(batch_size * batch_num).all()
