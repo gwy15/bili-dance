@@ -20,10 +20,10 @@ class BiliError(RuntimeError):
 
 
 class WriterThread(threading.Thread):
-    def __init__(self, queue, pbar):
+    def __init__(self, queue, num):
         super().__init__()
         self.q = queue
-        self.pbar = pbar
+        self.pbar = progressbar.ProgressBar(max_value=num)
         self.session = getSession('sqlite:///data.db')
         self.count = 0
 
@@ -54,23 +54,45 @@ class WriterThread(threading.Thread):
 
 class Spider:
     @staticmethod
-    def getPage(page, ps=20, rid=20):
+    def getPage(page, ps=50, rid=20):
+        referer = {
+            20: 'otaku',
+            154: 'three_d'
+        }
         url = 'https://api.bilibili.com/x/web-interface/newlist?'
         url += f'callback=&rid={rid}&type=0&pn={page}&ps={ps}&jsonp=jsonp&_={int(time.time() * 1000)}'
         headers = {
             'Host': 'api.bilibili.com',
-            'Referer': 'https://www.bilibili.com/v/dance/otaku/',
+            'Referer': f'https://www.bilibili.com/v/dance/{referer[rid]}/',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
         }
         for i in range(5):
             try:
-                res = requests.get(url, headers=headers).json()
+                resp = requests.get(url, headers=headers)
             except requests.ConnectionError:
                 if i == 4:
                     raise
                 print('\nConnection Error\n')
                 time.sleep(5)
                 continue
+
+            if resp.status_code == 403:
+                print('Request too frequent!')
+                if i == 4:
+                    raise RuntimeError('Request too frequent!')
+                time.sleep(5)
+                continue
+
+            try:
+                res = resp.json()
+            except json.JSONDecodeError:
+                if i == 4:
+                    raise
+                print('Json decode error')
+                print(resp.text)
+                time.sleep(5)
+                continue
+
             break
 
         if res['code']:
@@ -79,7 +101,7 @@ class Spider:
 
     def run(self, rid=20):
         if not os.path.exists('task.json'):
-            total = self.getPage(1)['page']['count']
+            total = self.getPage(1, rid=rid)['page']['count']
             pages = list(range(total // 50 + 2))
             with open('task.json', 'w') as f:
                 json.dump(pages, f)
@@ -87,10 +109,9 @@ class Spider:
             with open('task.json') as f:
                 pages = json.load(f)
 
-        pbar = progressbar.ProgressBar(max_value=len(pages))
         self.queue = queue.Queue()
 
-        WriterThread(self.queue, pbar).start()
+        WriterThread(self.queue, len(pages)).start()
 
         func = functools.partial(self.runPage, rid=rid)
 
@@ -98,13 +119,14 @@ class Spider:
             pool.map(func, pages)
         self.queue.put((None, None))
 
-    def runPage(self, page, rid=20):
-        data = self.getPage(page, ps=50, rid=rid)['archives']
+    def runPage(self, page, ps=50, rid=20):
+        data = self.getPage(page, ps=ps, rid=rid)['archives']
         self.queue.put((page, data))
+        time.sleep(1)
 
 
 def main():
-    Spider().run(rid=154) # 三次元
+    Spider().run(rid=154)  # 三次元
     # Spider().run(rid=20) # 宅舞
 
 

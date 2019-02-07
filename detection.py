@@ -72,9 +72,9 @@ class CloudVisionManager:
         annos = self.getResults(records)
         for record, anno in zip(records, annos):
             if anno.get('error', None):
-                if anno['error']['code'] != 4:
+                if anno['error']['code'] not in (4, 14):
                     print(f'\naid: {record.aid}, url: {record.picurl}')
-                    print('\ncode: ' + anno['error']['code'] + ', ' + anno['error']['message'] + '\n\n')
+                    print('\ncode: ' + str(anno['error']['code']) + ', ' + anno['error']['message'] + '\n\n')
                     raise RuntimeError(anno['error']['message'])
                 else:  # download
                     # print('using download method.')
